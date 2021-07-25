@@ -36,7 +36,9 @@ def _get_mnist_dataset(num_classes: int = 10):
 def main(_) -> None:
     param = efficient_capsnet.make_param()
     model = efficient_capsnet.make_model(param)
-    (X_train, y_train), _ = _get_mnist_dataset(param.num_digit_caps)
+    mnist_train, mnist_test = _get_mnist_dataset(param.num_digit_caps)
+    X_train, y_train = mnist_train
+    X_test, y_test = mnist_test
 
     checkpoint_dir = FLAGS.checkpoint_dir
     initial_epoch = 0
@@ -58,7 +60,7 @@ def main(_) -> None:
     model_save = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_dir +
                                                     "/{epoch:04d}.ckpt",
                                                     save_weights_only=True)
-
+    model.summary()
     model.fit(x=X_train,
               y=y_train,
               validation_split=FLAGS.validation_split,
@@ -66,6 +68,9 @@ def main(_) -> None:
               epochs=initial_epoch + FLAGS.num_epochs,
               callbacks=[csv_logger, model_save])
     model.save(f"{checkpoint_dir}/model")
+    
+    _, score = model.evaluate(X_test, y_test)
+    print(f"Score: {score: .4f}")
 
 
 if __name__ == "__main__":
