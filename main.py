@@ -60,7 +60,6 @@ def main(_) -> None:
     model_save = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_dir +
                                                     "/{epoch:04d}.ckpt",
                                                     save_weights_only=True)
-    model.summary()
     model.fit(x=X_train,
               y=y_train,
               validation_split=FLAGS.validation_split,
@@ -69,9 +68,6 @@ def main(_) -> None:
               callbacks=[csv_logger, model_save])
     model.summary()
     model.save(f"{checkpoint_dir}/model")
-    
-    _, score = model.evaluate(X_test, y_test)
-    print(f"Score: {score: .4f}")
 
     _, score = model.evaluate(X_test, y_test)
     print(f"Score: {score: .4f}")
