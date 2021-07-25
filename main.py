@@ -56,7 +56,7 @@ def main(_) -> None:
             model.load_weights(filepath=f"{checkpoint_dir}/{checkpoint_name}.ckpt")
 
     csv_logger = tf.keras.callbacks.CSVLogger(
-        filename=f"{checkpoint_dir}/log.csv", append=True)
+        filename=f"{checkpoint_dir}/train_log.csv", append=True)
     model_save = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_dir +
                                                     "/{epoch:04d}.ckpt",
                                                     save_weights_only=True)
@@ -67,8 +67,12 @@ def main(_) -> None:
               initial_epoch=initial_epoch,
               epochs=initial_epoch + FLAGS.num_epochs,
               callbacks=[csv_logger, model_save])
+    model.summary()
     model.save(f"{checkpoint_dir}/model")
     
+    _, score = model.evaluate(X_test, y_test)
+    print(f"Score: {score: .4f}")
+
     _, score = model.evaluate(X_test, y_test)
     print(f"Score: {score: .4f}")
 
