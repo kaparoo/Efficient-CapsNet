@@ -1,26 +1,34 @@
 # -*- coding: utf-8 -*-
 
-from efficient_capsnet.layers import DigitCaps
+from efficient_capsnet.layers import DigitCap
 from efficient_capsnet.layers import FeatureMap
-from efficient_capsnet.layers import PrimaryCaps
+from efficient_capsnet.layers import PrimaryCap
+from efficient_capsnet.losses import MarginLoss
 from efficient_capsnet.param import CapsNetParam
 
 import tensorflow as tf
-from tensorflow.keras import models
+from typing import List
+from typing import Union
 
 
-class EfficientCapsNet(models.Model):
-    def __init__(self, param: CapsNetParam) -> None:
-        super(EfficientCapsNet, self).__init__(name="Efficient-CapsNet")
-        self.param = param
+def make_model(
+    param: CapsNetParam,
+    optimizer: tf.keras.optimizers.Optimizer = tf.keras.optimizers.Adam(),
+    loss: tf.keras.losses.Loss = MarginLoss(),
+    metrics: List[Union[str, tf.keras.metrics.Metric]] = ["accuracy"]
+) -> tf.keras.Model:
+    input_images = tf.keras.layers.Input(
+        shape=[param.input_height, param.input_width, param.input_channel],
+        name="input_images")
+    feature_maps = FeatureMap(param, name="feature_maps")(input_images)
+    primary_caps = PrimaryCap(param, name="primary_caps")(feature_maps)
+    digit_caps = DigitCap(param, name="digit_caps")(primary_caps)
+    digit_probs = tf.keras.layers.Lambda(lambda x: tf.norm(x, axis=-1),
+                                         name="digit_probs")(digit_caps)
 
-    def build(self, _) -> None:
-        self.feature_map = FeatureMap(self.param)
-        self.primary_caps = PrimaryCaps(self.param)
-        self.digit_caps = DigitCaps(self.param)
+    model = tf.keras.Model(inputs=input_images,
+                           outputs=digit_probs,
+                           name="Efficient-CapsNet")
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
-    def call(self, input_image: tf.Tensor) -> tf.Tensor:
-        feature_map = self.feature_map(input_image)
-        primary_caps = self.primary_caps(feature_map)
-        digit_caps = self.digit_caps(primary_caps)
-        return tf.norm(digit_caps, axis=-1)
+    return model
