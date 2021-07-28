@@ -1,5 +1,7 @@
 # **EFFICIENT-CAPSNET: CAPSULE NETWORK WITH SELF-ATTENTION ROUTING**  
   
+![model_plot](./model.png)
+
 Tensorflow 2.x (with Keras API) Implementation of the Efficient-CapsNet (Mazzia et al., 2021)
 
 # **Training and Testing (MNIST)**  
