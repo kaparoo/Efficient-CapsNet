@@ -1,0 +1,6 @@
+num_epochs=15
+validation_split=0.2
+show_score=True
+show_summary=True
+scale_mnist=True
+plot_logs=True
